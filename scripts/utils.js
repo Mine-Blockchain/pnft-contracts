@@ -108,6 +108,24 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function etherscanVerify(implAddr, params) {
+    console.log("Verifying Contract, ImplAddress:", implAddr);
+  
+    try {
+      await hre.run("verify:verify", {
+          address: implAddr,
+          constructorArguments: params
+      }); 
+      console.log("Verify Done!");
+    } catch (error) {
+        if (error.message.toLowerCase().indexOf("already verified") == -1) {
+            throw(error);
+        } else {
+            console.log("Already Verified");
+        }
+    }
+}
+
 module.exports = {
     saveContractAbis,
     saveContractAddress,
@@ -120,5 +138,6 @@ module.exports = {
     deployOnly,
     sleep,
     getSignature,
-    toBigNumber
+    toBigNumber,
+    etherscanVerify
 }
