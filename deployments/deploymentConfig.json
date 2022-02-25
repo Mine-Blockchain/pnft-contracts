@@ -1,0 +1,16 @@
+{
+    "hardhat": {
+        "admin": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "maintainer": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
+    },
+
+    "ropsten": {
+        "admin": "0xDc02343f2d08a9D97F999B2D7f53A10f6763F505",
+        "maintainer": "0xdd0B0A31E5fF274A09dA30c91493A83798f66B1A"
+    },
+
+    "gv": {
+        "admin": "0x4A324a673195663da51cC00E7669e3214d3a40f1",
+        "maintainer": "0x88c8C64058c0Febbd30752237F87cD933e92E25f"
+    }
+}
