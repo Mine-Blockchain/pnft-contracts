@@ -1,22 +1,22 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract PNFT is 
-    Context,
-    AccessControl,
-    ReentrancyGuard,
-    ERC721,
-    ERC721Pausable 
+    ContextUpgradeable,
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable,
+    ERC721Upgradeable,
+    ERC721PausableUpgradeable 
 {
-    using Counters for Counters.Counter;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
     /*** Events ***/
     event PNFTMint (uint256 indexed tokenId, address indexed to, uint256 skuId, uint256 size, uint256 ctime);
@@ -32,14 +32,15 @@ contract PNFT is
         uint256 ctime;
     }
 
-    Counters.Counter private _tokenIdTracker;
+    CountersUpgradeable.Counter private _tokenIdTracker;
     mapping(uint256 => PNFTMeta) public nftMeta;
+    string public baseURI;
 
     /*** Contract Logic Starts Here ***/
 
-    constructor(
-        address _admin
-    ) ERC721("pNFT", "pNFT") {
+    function initialize(address _admin) public initializer {
+        __ReentrancyGuard_init();
+        __ERC721_init("pNFT", "pNFT");
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
     }
 
@@ -65,12 +66,13 @@ contract PNFT is
         PNFTMeta memory meta = nftMeta[tokenId];
 
         return string(abi.encodePacked(
-            "PNFT,", 
-            Strings.toString(meta.skuId),
-            ",",
-            Strings.toString(meta.size),
-            ",",
-            Strings.toString(meta.ctime)
+            baseURI,
+            "pnft?i=", 
+            StringsUpgradeable.toString(meta.skuId),
+            "&n=",
+            StringsUpgradeable.toString(meta.size),
+            "&t=",
+            StringsUpgradeable.toString(meta.ctime)
         ));
     }
 
@@ -85,7 +87,7 @@ contract PNFT is
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override(ERC721, ERC721Pausable) {
+    ) internal virtual override(ERC721Upgradeable, ERC721PausableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -98,6 +100,10 @@ contract PNFT is
     function unpause() public onlyRole(DEFAULT_ADMIN_ROLE) {
         _unpause();
     }
+    
+    function setBaseURI(string memory _uri) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        baseURI = _uri;
+    }
 
     // ---------------------------------------------------------
     // MISC
@@ -105,7 +111,7 @@ contract PNFT is
         public
         view
         virtual
-        override(AccessControl, ERC721)
+        override(AccessControlUpgradeable, ERC721Upgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

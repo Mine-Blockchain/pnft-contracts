@@ -1,22 +1,20 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
-// import "hardhat/console.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 contract Miner is
-    ReentrancyGuard,
-    AccessControl,
-    Pausable
+    ReentrancyGuardUpgradeable,
+    AccessControlUpgradeable,
+    PausableUpgradeable
 {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /*** Events ***/
     event SkuInfoAdded(uint256 indexed skuId, uint256 unitPrice, uint256 stockSize, address paymentToken, address pRewardToken, address xRewardToken, uint256 lifeTime);
@@ -48,11 +46,13 @@ contract Miner is
 
     /*** Contract Logic Starts Here ***/
 
-    constructor(
+    function initialize(
         address _admin,
         address _pNftToken,
         address _maintainer
-    ) {
+    ) public initializer {
+        __ReentrancyGuard_init();
+        
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
 
         pNftToken = _pNftToken;
@@ -72,7 +72,7 @@ contract Miner is
 
         // Transfer
         uint256 cost = size * skus[skuId].unitPrice;
-        IERC20(skus[skuId].paymentToken).safeTransferFrom(user, address(this), cost);
+        IERC20Upgradeable(skus[skuId].paymentToken).safeTransferFrom(user, address(this), cost);
 
         // Mint
         uint256 tokenId = IPNFT(pNftToken).mintPNFT(user, skuId, size);
@@ -121,7 +121,7 @@ contract Miner is
                 _prevRewardIndex,
                 _curRewardIndex)
         );
-        require(ECDSA.recover(ECDSA.toEthSignedMessageHash(data), _signature) == maintainer, "Invalid signer");
+        require(ECDSAUpgradeable.recover(ECDSAUpgradeable.toEthSignedMessageHash(data), _signature) == maintainer, "Invalid signer");
 
         // Update
         if (_curRewardIndex > maxClaimedRewardIndexes[_skuId]) {
@@ -130,8 +130,8 @@ contract Miner is
         userPrevClaimedRewardIndexes[user][_skuId] = _curRewardIndex;
 
         // Transfer
-        IERC20(_pRewardToken).safeTransfer(user, _pRewardAmount);
-        IERC20(_xRewardToken).safeTransfer(user, _xRewardAmount);
+        IERC20Upgradeable(_pRewardToken).safeTransfer(user, _pRewardAmount);
+        IERC20Upgradeable(_xRewardToken).safeTransfer(user, _xRewardAmount);
 
         // Event
         emit Claimed(user, _skuId, _pRewardAmount, _xRewardAmount, _prevRewardIndex, _curRewardIndex, block.timestamp);
@@ -182,7 +182,7 @@ contract Miner is
 
     function withdrawFund(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
 
-        IERC20(token).safeTransfer(to, amount);
+        IERC20Upgradeable(token).safeTransfer(to, amount);
 
         emit WithdrawFund(to, token, amount);
     }
@@ -194,7 +194,7 @@ contract Miner is
         public
         view
         virtual
-        override(AccessControl)
+        override(AccessControlUpgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

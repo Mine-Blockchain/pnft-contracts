@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const hre = require("hardhat")
 const { upgrades, ethers } = require("hardhat");
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 const getSignature = async (signer, types, vars) => {
     let message = ethers.utils.solidityKeccak256(types, vars);
@@ -108,7 +109,31 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function etherscanVerify(implAddr, params) {
+async function etherscanVerify(addr, params, isProxy) {
+
+    let implAddr = addr;
+    if (isProxy) {
+        implAddr = getImplementationAddress(ethers.provider, addr);
+        console.log("getImplementationAddress:", addr, " -> ", implAddr);
+    }
+    console.log("Verifying Contract, ImplAddress:", implAddr);
+  
+    try {
+      await hre.run("verify:verify", {
+          address: implAddr,
+          constructorArguments: params
+      }); 
+      console.log("Verify Done!");
+    } catch (error) {
+        if (error.message.toLowerCase().indexOf("already verified") == -1) {
+            throw(error);
+        } else {
+            console.log("Already Verified");
+        }
+    }
+}
+
+async function etherscanVerifyProxy(implAddr, params) {
     console.log("Verifying Contract, ImplAddress:", implAddr);
   
     try {

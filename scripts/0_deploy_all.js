@@ -27,11 +27,11 @@ async function main() {
     wEthToken = config["wEthToken"];
   }
 
-  await deploy_ct("PNFT", "pNftToken", [config["admin"]], false);
+  await deploy_ct("PNFT", "pNftToken", [config["admin"]], true);
   pNftAddr = getSavedContractAddresses()[hre.network.name]["pNftToken"];
 
   // Deploy Miner
-  await deploy_ct("Miner", "miner", [config["admin"], pNftAddr, config["maintainer"]], false);
+  await deploy_ct("Miner", "miner", [config["admin"], pNftAddr, config["maintainer"]], true);
   minerAddr = getSavedContractAddresses()[hre.network.name]["miner"];
 
   // Setting
@@ -45,15 +45,15 @@ async function main() {
   // Verify
   if (hre.network.name == "ropsten") {
     // Verify ERC20s
-    await etherscanVerify(usdtToken,["USDT Test", "tUSDT"]);
-    await etherscanVerify(mnetToken,["MNET Test", "tMNET"]);
-    await etherscanVerify(wBtcToken,["wBtc Test", "wBtc"]);
-    await etherscanVerify(wEthToken,["wEth Test", "wEth"]);
+    await etherscanVerify(usdtToken,["USDT Test", "tUSDT"], false);
+    await etherscanVerify(mnetToken,["MNET Test", "tMNET"], false);
+    await etherscanVerify(wBtcToken,["wBtc Test", "wBtc"], false);
+    await etherscanVerify(wEthToken,["wEth Test", "wEth"], false);
   }
   if (hre.network.name == "ropsten" || hre.network.name == "mainnet") {
     // Verify Miner & pNFT
-    await etherscanVerify(pNftAddr,[config["admin"]]);
-    await etherscanVerify(minerAddr,[config["admin"], pNftAddr, config["maintainer"]]);
+    await etherscanVerify(pNftAddr,[config["admin"]], true);
+    await etherscanVerify(minerAddr,[config["admin"], pNftAddr, config["maintainer"]], true);
   }
 
   console.log("All Done");

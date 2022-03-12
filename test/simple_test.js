@@ -33,8 +33,8 @@ describe("Test All", function () {
       mnetToken = await deployOnly("ERC20Mock", ["", ""], false);
       wEthToken = await deployOnly("ERC20Mock", ["", ""], false);
       wBtcToken = await deployOnly("ERC20Mock", ["", ""], false);
-      pNft = await deployOnly("PNFT", [admin.address], false);
-      miner = await deployOnly("Miner", [admin.address, pNft.address, maintainer.address], false);
+      pNft = await deployOnly("PNFT", [admin.address], true);
+      miner = await deployOnly("Miner", [admin.address, pNft.address, maintainer.address], true);
 
       const MINTER_ROLE = toRole("MINTER_ROLE");
       await pNft.connect(admin).grantRole(MINTER_ROLE, miner.address);
@@ -122,9 +122,10 @@ describe("Test All", function () {
         curBalance = await usdtToken.balanceOf(bob.address);
         expect(curBalance).to.equal(toMint.sub(paymentAmount));
 
-        // Check NFT
-        // let tokenURI = await pNft.tokenURI(tokenId);
-        // console.log("tokenURI:", tokenURI);
+        // Check NFT Token URI
+        await pNft.connect(admin).setBaseURI("http://mysite.com/nftmarket-meta/");
+        let tokenURI = await pNft.tokenURI(tokenId);
+        console.log("tokenURI:", tokenURI);
 
         let meta = await pNft.getMeta(tokenId);
         // console.log("meta:", meta);
