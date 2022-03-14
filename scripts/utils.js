@@ -73,7 +73,7 @@ async function deploy_ct(class_name, name, init_params, use_proxy) {
     if (use_proxy === false) {
         ct_inst = await ct_class.deploy(...init_params);
     } else {
-        ct_inst = await upgrades.deployProxy(ct_class, init_params);
+        ct_inst = await upgrades.deployProxy(ct_class, init_params, {timeout: 0});
     }
 
     await ct_inst.deployed();
@@ -113,7 +113,8 @@ async function etherscanVerify(addr, params, isProxy) {
 
     let implAddr = addr;
     if (isProxy) {
-        implAddr = getImplementationAddress(ethers.provider, addr);
+        implAddr = await getImplementationAddress(ethers.provider, addr);
+        params = [];
         console.log("getImplementationAddress:", addr, " -> ", implAddr);
     }
     console.log("Verifying Contract, ImplAddress:", implAddr);
