@@ -41,7 +41,6 @@ contract Miner is
     mapping(uint256 => uint256) public maxClaimedRewardIndexes;
 
     address public pNftToken;
-    address public sNftToken;
     address public maintainer;
 
     /*** Contract Logic Starts Here ***/

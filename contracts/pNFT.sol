@@ -68,6 +68,8 @@ contract PNFT is
         return string(abi.encodePacked(
             baseURI,
             "pnft?i=", 
+            StringsUpgradeable.toString(tokenId),
+            "&s=",
             StringsUpgradeable.toString(meta.skuId),
             "&n=",
             StringsUpgradeable.toString(meta.size),
